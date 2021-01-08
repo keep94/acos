@@ -1,35 +1,77 @@
 import fractions
 import itertools
 
-def acos(count):
+def acos():
     """
     This is the main function of this module.
-    Returns a list containing the coefficients of the infinite series for
-    acos(1 - x/2). The first coefficient is for x^0.5, the second is for
-    x^1.5 etc. count is the number of coefficients to return.
+    yields the coefficients of the infinite series for acos(1 - x/2).
+    The first coefficient is for x^0.5, the second is for x^1.5 etc.
     """
-    x = acos_square(count)
-    return sqrt(x[1:], count)
+    return sqrt(itertools.islice(sub_xover2(inverse(cos_coefs())), 1, None))
 
-def sqrt(coef, count):
+def take(series, count):
     """
-    Returns the sqrt of coef. coef is a list of ints or fractions. coef[0]
-    is always 1 and is the coefficient of x^0. coef[1] is the coefficient of
-    x. coef[2] is the coefficient of x^2 etc. Of the returned list, the
-    first value is always 1, the second value is the coefficient of x, the
-    third value is the coefficient of x^2 etc. count is the number of
-    coefficients to return. For example, sqrt([1, 1], 3) = [1, 1/2, -1/8]
+    Returns the first count values of series.
     """
-    coef = [fractions.Fraction(x) for x in coef]
-    while len(coef) < count:
-        coef.append(fractions.Fraction(0))
+    return list(itertools.islice(series, count))
+
+def cos_coefs():
+    """
+    Yields 0, 1/2!, -1/4!, 1/6! etc
+    """
+    yield 0
+    sign = 1
+    for i in itertools.count(2, 2):
+        yield fractions.Fraction(sign, factorial(i))
+        sign *= -1
+
+def sub_xover2(coefs):
+    """
+    plugs in x/2 into coefs and yields resulting coefficients
+    """
+    pow2 = 1
+    for x in coefs:
+        yield x / pow2
+        pow2 *= 2
+
+def inverse(coefs):
+    """
+    Yields the coefficients of the inverse of coefs. coefs[0] must be 0;
+    coefs[1] must be non-zero.
+    """
+    coefs = iter(coefs)
+    coeflist = []
+    coeflist.append(next(coefs))
+    coeflist.append(fractions.Fraction(next(coefs)))
+    result = [0, 1 / coeflist[1]]
+    yield result[0]
+    yield result[1]
+    for i in itertools.count(2):
+        next_coef = next(coefs, None)
+        if next_coef is not None:
+            coeflist.append(fractions.Fraction(next_coef))
+        sum = fractions.Fraction(0)
+        for j in range(2, min(i+1, len(coeflist))):
+            sum += pow_term(result, j, i) * coeflist[j]
+        next_term = -sum / coeflist[1]
+        result.append(next_term)
+        yield next_term
+
+def sqrt(coefs):
+    """
+    Yields the coefficients of the sqrt of coefs. coefs[0] must be one.
+    """
+    coefs = iter(coefs)
+    next(coefs)
     result = [fractions.Fraction(1)]
-    for i in range(1, count):
+    yield result[0]
+    for i in itertools.count(1):
         sum = fractions.Fraction(0)
         for j in range(1, i):
             sum += result[j]*result[i-j]
-        result.append((coef[i] - sum) / fractions.Fraction(2))
-    return result
+        next_term = (fractions.Fraction(next(coefs, 0)) - sum) / 2
+        result.append(next_term)
+        yield next_term
 
 def sums(total, count):
     """
@@ -51,23 +93,6 @@ def factorial(x):
     result = 1
     for i in range(1, x+1):
         result *= i
-    return result
-
-def acos_square(count):
-    """
-    Like acos but returns the infinite series for (acos(1 - x/2))^2 as a list
-    of coefficients. The first coefficient is 0. The second is for x,
-    the third is for x^2 etc. count is the number of non zero coefficients to
-    return.  acos_square(3) = [0, 1, 1/12, 1/90]
-    """
-    result = [0, fractions.Fraction(1)]
-    for i in range(2, count+1):
-        sum = fractions.Fraction(0)
-        sub = 1
-        for j in range(2, i+1):
-            sum += pow_term(result, j, i) / factorial(2*j) * sub
-            sub *= -1
-        result.append(2*sum)
     return result
 
 def pow_term(p, pow, term):
