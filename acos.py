@@ -43,7 +43,7 @@ def inverse(coefs):
     coeflist = []
     coeflist.append(next(coefs))
     coeflist.append(fractions.Fraction(next(coefs)))
-    result = [0, 1 / coeflist[1]]
+    result = [fractions.Fraction(0), 1 / coeflist[1]]
     yield result[0]
     yield result[1]
     for i in itertools.count(2):
