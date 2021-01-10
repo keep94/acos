@@ -22,8 +22,8 @@ def inverse(coefs):
     yield result[0]
     yield result[1]
     for i in itertools.count(2):
-        next_coef = next(coefs, None)
-        if next_coef is not None:
+        next_coef = next(coefs, _no_more)
+        if next_coef is not _no_more:
             coeflist.append(fractions.Fraction(next_coef))
         sum = fractions.Fraction(0)
         for j in range(2, min(i+1, len(coeflist))):
@@ -53,6 +53,8 @@ def take(series, count):
     Returns the first count values of series.
     """
     return list(itertools.islice(series, count))
+
+_no_more = object()
 
 def _cos_coefs():
     """
