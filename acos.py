@@ -7,32 +7,7 @@ def acos():
     yields the coefficients of the infinite series for acos(1 - x/2).
     The first coefficient is for x^0.5, the second is for x^1.5 etc.
     """
-    return sqrt(itertools.islice(sub_xover2(inverse(cos_coefs())), 1, None))
-
-def take(series, count):
-    """
-    Returns the first count values of series.
-    """
-    return list(itertools.islice(series, count))
-
-def cos_coefs():
-    """
-    Yields 0, 1/2!, -1/4!, 1/6! etc
-    """
-    yield 0
-    sign = 1
-    for i in itertools.count(2, 2):
-        yield fractions.Fraction(sign, factorial(i))
-        sign *= -1
-
-def sub_xover2(coefs):
-    """
-    plugs in x/2 into coefs and yields resulting coefficients
-    """
-    pow2 = 1
-    for x in coefs:
-        yield x / pow2
-        pow2 *= 2
+    return sqrt(itertools.islice(_sub_xover2(inverse(_cos_coefs())), 1, None))
 
 def inverse(coefs):
     """
@@ -52,7 +27,7 @@ def inverse(coefs):
             coeflist.append(fractions.Fraction(next_coef))
         sum = fractions.Fraction(0)
         for j in range(2, min(i+1, len(coeflist))):
-            sum += pow_term(result, j, i) * coeflist[j]
+            sum += _pow_term(result, j, i) * coeflist[j]
         next_term = -sum / coeflist[1]
         result.append(next_term)
         yield next_term
@@ -73,11 +48,36 @@ def sqrt(coefs):
         result.append(next_term)
         yield next_term
 
-def sums(total, count):
+def take(series, count):
+    """
+    Returns the first count values of series.
+    """
+    return list(itertools.islice(series, count))
+
+def _cos_coefs():
+    """
+    Yields 0, 1/2!, -1/4!, 1/6! etc
+    """
+    yield 0
+    sign = 1
+    for i in itertools.count(2, 2):
+        yield fractions.Fraction(sign, _factorial(i))
+        sign *= -1
+
+def _sub_xover2(coefs):
+    """
+    plugs in x/2 into coefs and yields resulting coefficients
+    """
+    pow2 = 1
+    for x in coefs:
+        yield x / pow2
+        pow2 *= 2
+
+def _sums(total, count):
     """
     Generates all the sequences of positive integers that add up to total.
     count is the number of integers in each sequence. For example,
-    sums(4, 3) yiels [1, 1, 2], [1, 2, 1], [2, 1, 1].
+    _sums(4, 3) yiels [1, 1, 2], [1, 2, 1], [2, 1, 1].
     """
     for combo in itertools.combinations(range(1, total), count - 1):
         last = 0
@@ -88,21 +88,21 @@ def sums(total, count):
         result.append(total - last)
         yield result
 
-def factorial(x):
+def _factorial(x):
     """Returns x!"""
     result = 1
     for i in range(1, x+1):
         result *= i
     return result
 
-def pow_term(p, pow, term):
+def _pow_term(p, pow, term):
     """
     Computes the coefficient of x^term of p^pow. p is a list of coefficients.
     p[0]=0, p[1] is the coefficient of x. p[2] is the coefficient of x^2
     etc.
     """
     result = fractions.Fraction(0)
-    for terms in sums(term, pow):
+    for terms in _sums(term, pow):
         prod = fractions.Fraction(1)
         for t in terms:
             prod *= p[t]
