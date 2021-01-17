@@ -32,6 +32,22 @@ def inverse(coefs):
         result.append(next_term)
         yield next_term
 
+def eval(coefs, x, terms=10):
+    """
+    Evaluates coefs at x. The optional parameter terms indicates how many
+    terms to evaluate in case coefs does not have a finite length. coefs[0] is
+    the constant coefficient. coefs[1] is the coefficient of x. coefs[2] is
+    the coefficient of x^2 etc.
+    """
+    prod = 1
+    result = 0.0
+    if not hasattr(coefs, '__len__'):
+        coefs = take(coefs, terms)
+    for coef in coefs:
+        result += coef*prod
+        prod *= x
+    return result
+
 def sqrt(coefs):
     """
     Yields the coefficients of the sqrt of coefs. coefs[0] must be one.
