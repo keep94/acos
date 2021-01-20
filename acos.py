@@ -7,7 +7,7 @@ def acos():
     yields the coefficients of the infinite series for acos(1 - x/2).
     The first coefficient is for x^0.5, the second is for x^1.5 etc.
     """
-    return sqrt(itertools.islice(_sub_xover2(inverse(_cos_coefs())), 1, None))
+    return sqrt(itertools.islice(inverse(2*x for x in _cos_coefs()), 1, None))
 
 def inverse(coefs):
     """
@@ -78,18 +78,12 @@ def _cos_coefs():
     """
     yield 0
     sign = 1
+    prod = 2
     for i in itertools.count(2, 2):
-        yield fractions.Fraction(sign, _factorial(i))
+        yield fractions.Fraction(sign, prod)
         sign *= -1
-
-def _sub_xover2(coefs):
-    """
-    plugs in x/2 into coefs and yields resulting coefficients
-    """
-    pow2 = 1
-    for x in coefs:
-        yield x / pow2
-        pow2 *= 2
+        prod *= i+1
+        prod *= i+2
 
 def _sums(total, count):
     """
@@ -105,13 +99,6 @@ def _sums(total, count):
             last = x
         result.append(total - last)
         yield result
-
-def _factorial(x):
-    """Returns x!"""
-    result = 1
-    for i in range(1, x+1):
-        result *= i
-    return result
 
 def _pow_term(p, pow, term):
     """
